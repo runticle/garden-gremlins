@@ -2,9 +2,11 @@
 
 This is a stupid game built in a nextjs app that I made in a couple of days for my dads birthday. 
 
-You can play it here, thebirds.alfiefreeman.co.uk
+You can play it [here](thebirds.alfiefreeman.co.uk). For now. Until I have to pay.
 
 It's pretty simple - move about with wasd and shoot birds with the spacebar. Don't get hit by falling shit. 
+
+![Gameplay](/public/images/thebirdsgameplay.png)  
 
 ## Future Features
 - difficulty settings
