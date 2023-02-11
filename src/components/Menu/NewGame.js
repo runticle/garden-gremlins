@@ -1,4 +1,4 @@
-import { GameBox, InnerGameBox } from "./styles";
+import { GameBox, InnerGameBox } from "../styles";
 
 
 export default function NewGame({ startGame }) {
