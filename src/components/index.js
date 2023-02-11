@@ -14,6 +14,7 @@ import GameEnd from "./GameEnd"
 import HealthBar from "./HealthBar"
 import Paused from "./Paused"
 import NewGame from "./NewGame"
+import Settings from "./Settings"
 
 const GAME_STATUS = {
     NEW_GAME: 'NEW_GAME',
@@ -25,6 +26,7 @@ const GAME_STATUS = {
 
 export default function TheBirds() {
     const [userData, updateUserData] = useState(GAME_DATA.INITIAL_USER_DATA)
+    const [settings, updateSettings] = useState(GAME_DATA.DEFAULT_SETTINGS)
 
     const [timerPaused, toggleTimer] = useState(true)
     const [waveIndex, setWaveIndex] = useState(0)
@@ -58,7 +60,7 @@ export default function TheBirds() {
             if (bullet.y > 1100 - gunPosition.y) return
             const newPosition = {
                 x: bullet.x,
-                y: bullet.y + GAME_DATA.SHIT_SPEED,
+                y: bullet.y + settings.SHIT_SPEED,
             }
 
             newShitPositions.push(newPosition)
@@ -113,8 +115,8 @@ export default function TheBirds() {
             // checking bullets hitting birds...
             for (const [bulletIndex, bullet] of bulletPositions.entries()) {
                 if (bird_y > 1000 - bullet.y) continue // bullet not reached yet
-                if (bird_y < 1000 - bullet.y - GAME_DATA.BULLET_SIZE - GAME_DATA.BIRD_HEIGHT) continue // bullet gone past
-                if (bullet.x + GAME_DATA.BULLET_SIZE < bird_x) continue
+                if (bird_y < 1000 - bullet.y - settings.BULLET_SIZE - GAME_DATA.BIRD_HEIGHT) continue // bullet gone past
+                if (bullet.x + settings.BULLET_SIZE < bird_x) continue
                 if (bullet.x > bird_x + GAME_DATA.BIRD_WIDTH) continue
 
                 killbird(birdIndex, bulletIndex)
@@ -128,8 +130,8 @@ export default function TheBirds() {
 
             if (
                 gunPosition.x + userData.GUN_WIDTH > shit_x // gunPosition width
-                && gunPosition.x < shit_x + GAME_DATA.SHIT_SIZE // bird width
-                && shit_y > 1000 - gunPosition.y - GAME_DATA.SHIT_SIZE - userData.GUN_HEIGHT
+                && gunPosition.x < shit_x + settings.SHIT_SIZE // bird width
+                && shit_y > 1000 - gunPosition.y - settings.SHIT_SIZE - userData.GUN_HEIGHT
                 && shit_y < 1000 - gunPosition.y
             ) {
                 playerHit(shitIndex)
@@ -187,7 +189,7 @@ export default function TheBirds() {
             // spacebar is a bulleta
             case 32:
                 // and we need to throw a bullet into the mixer
-                const position = { x: gunPosition.x + (userData.GUN_WIDTH / 2) - (GAME_DATA.BULLET_SIZE / 2), y: gunPosition.y + userData.GUN_HEIGHT / 2 }
+                const position = { x: gunPosition.x + (userData.GUN_WIDTH / 2) - (settings.BULLET_SIZE / 2), y: gunPosition.y + userData.GUN_HEIGHT / 2 }
                 pullTrigger(position)
                 // progressBullets(prevBulletPositions => ([...prevBulletPositions, position]))
                 break;
@@ -298,7 +300,7 @@ export default function TheBirds() {
         const interval = setInterval(() => {
             if (timerPaused) return () => clearInterval(interval);
             updateGameStep()
-        }, GAME_DATA.GAME_PULSE);
+        }, settings.GAME_PULSE);
 
         if (playerHealth < 0) {
             updateGameStatus(GAME_STATUS.LEVEL_COMPLETE)
