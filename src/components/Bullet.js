@@ -12,10 +12,10 @@ const BulletSprite = styled.div`
     background-color: red;
 `
 
-export default function Bullet({ position }) {
+export default function Bullet({ position, settings }) {
     const { x, y } = position;
 
-    const { BULLET_SIZE } = GAME_DATA;
+    const { BULLET_SIZE } = settings;
 
     const width = toPixel(BULLET_SIZE);
     const height = toPixel(BULLET_SIZE);

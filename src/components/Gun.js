@@ -17,10 +17,10 @@ const GunSprite = styled.div`
     z-index: 500;
 `
 
-export default function Gun({ position }) {
+export default function Gun({ position, userData }) {
     const { x, y } = position
 
-    const { GUN_WIDTH, GUN_HEIGHT } = GAME_DATA.INITIAL_USER_DATA
+    const { GUN_WIDTH, GUN_HEIGHT } = userData;
 
     const width = toPixel(GUN_WIDTH)
     const height = toPixel(GUN_HEIGHT)
