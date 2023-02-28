@@ -10,36 +10,47 @@ import debounce from 'lodash.debounce'
 
 import GAME_DATA from "./gameData"
 import Shit from "./Shit"
-import GameEnd from "./GameEnd"
 import HealthBar from "./HealthBar"
 import Paused from "./Paused"
-import NewGame from "./NewGame"
+import Settings from "./Menu/Settings"
+import Menu from "./Menu"
+import useLocalStorage from "@/utils/useLocalStorage"
 
 const GAME_STATUS = {
-    NEW_GAME: 'NEW_GAME',
+    INITIALISING: 'INITIALISING', // only on startup.
+    MENU: 'MENU', // new game menu / between levels / end game
     LIVE: 'LIVE',
     PAUSED: 'PAUSED',
-    LEVEL_COMPLETE: 'LEVEL_COMPLETE',
-    // END ?
 }
 
 export default function TheBirds() {
-    const [userData, updateUserData] = useState(GAME_DATA.INITIAL_USER_DATA)
+    // editable by upgrades
+    const [userData, updateUserData] = useState({})
+    // editable in settings
+    // default difficulty
+    const [difficulty, updateDifficulty] = useLocalStorage('difficulty', GAME_DATA.DIFFICULTY_PRESETS.HARD)
+    const [settings, updateSettings] = useState({})
+    // editable by gameplay (stores health/kills etc) (waveIndex, paths etc eventually)
+    const [gameData, updateGameData] = useState({})
 
-    const [timerPaused, toggleTimer] = useState(true)
+    // to be moved into gameData
+    const [kills, addKill] = useState(0)
+    const [playerHealth, editHealth] = useState(userData.INITIAL_HEALTH)
+
+
+    // paths, maybe to be moved in
+    const [gunPosition, moveGun] = useState(GAME_DATA.INITIAL_GUN_POSITION)
     const [waveIndex, setWaveIndex] = useState(0)
     const [wave, setNewWave] = useState([])
     const [birdPaths, setBirdPaths] = useState(null)
-    const [gameStep, progressGameStep] = useState(0)
     const [bulletPositions, progressBullets] = useState([])
-    const [kills, addKill] = useState(0)
-    const [gameStatus, updateGameStatus] = useState(GAME_STATUS.NEW_GAME)
-    const [gunPosition, moveGun] = useState(GAME_DATA.INITIAL_GUN_POSITION)
-
-    const [playerHealth, editHealth] = useState(userData.INITIAL_HEALTH)
-
     const [shitPositions, progressBirdShit] = useState([])
 
+    // keep as exclusive
+    const [showSettings, setShowSettings] = useState(false)
+    const [gameStatus, updateGameStatus] = useState(GAME_STATUS.INITIALISING)
+    const [timerPaused, toggleTimer] = useState(true)
+    const [gameStep, progressGameStep] = useState(0)
     const [buttonsDown, changeButtonStatus] = useState({
         up: false,
         down: false,
@@ -58,14 +69,14 @@ export default function TheBirds() {
             if (bullet.y > 1100 - gunPosition.y) return
             const newPosition = {
                 x: bullet.x,
-                y: bullet.y + GAME_DATA.SHIT_SPEED,
+                y: bullet.y + settings.SHIT_SPEED,
             }
 
             newShitPositions.push(newPosition)
         })
 
         progressBirdShit(newShitPositions)
-    }, [shitPositions, progressBirdShit, gunPosition])
+    }, [shitPositions, progressBirdShit, gunPosition, settings])
 
     const updateBulletPositions = useCallback(() => {
         const newBulletPositions = []
@@ -113,8 +124,8 @@ export default function TheBirds() {
             // checking bullets hitting birds...
             for (const [bulletIndex, bullet] of bulletPositions.entries()) {
                 if (bird_y > 1000 - bullet.y) continue // bullet not reached yet
-                if (bird_y < 1000 - bullet.y - GAME_DATA.BULLET_SIZE - GAME_DATA.BIRD_HEIGHT) continue // bullet gone past
-                if (bullet.x + GAME_DATA.BULLET_SIZE < bird_x) continue
+                if (bird_y < 1000 - bullet.y - settings.BULLET_SIZE - GAME_DATA.BIRD_HEIGHT) continue // bullet gone past
+                if (bullet.x + settings.BULLET_SIZE < bird_x) continue
                 if (bullet.x > bird_x + GAME_DATA.BIRD_WIDTH) continue
 
                 killbird(birdIndex, bulletIndex)
@@ -128,8 +139,8 @@ export default function TheBirds() {
 
             if (
                 gunPosition.x + userData.GUN_WIDTH > shit_x // gunPosition width
-                && gunPosition.x < shit_x + GAME_DATA.SHIT_SIZE // bird width
-                && shit_y > 1000 - gunPosition.y - GAME_DATA.SHIT_SIZE - userData.GUN_HEIGHT
+                && gunPosition.x < shit_x + settings.SHIT_SIZE // bird width
+                && shit_y > 1000 - gunPosition.y - settings.SHIT_SIZE - userData.GUN_HEIGHT
                 && shit_y < 1000 - gunPosition.y
             ) {
                 playerHit(shitIndex)
@@ -138,7 +149,7 @@ export default function TheBirds() {
         }
 
 
-    }, [bulletPositions, wave, killbird, gameStep, shitPositions, gunPosition, playerHit, userData])
+    }, [bulletPositions, wave, killbird, settings, gameStep, shitPositions, gunPosition, playerHit, userData])
 
     const updateGunPosition = useCallback(() => {
         moveGun(prevGunPosition => {
@@ -187,7 +198,7 @@ export default function TheBirds() {
             // spacebar is a bulleta
             case 32:
                 // and we need to throw a bullet into the mixer
-                const position = { x: gunPosition.x + (userData.GUN_WIDTH / 2) - (GAME_DATA.BULLET_SIZE / 2), y: gunPosition.y + userData.GUN_HEIGHT / 2 }
+                const position = { x: gunPosition.x + (userData.GUN_WIDTH / 2) - (settings.BULLET_SIZE / 2), y: gunPosition.y + userData.GUN_HEIGHT / 2 }
                 pullTrigger(position)
                 // progressBullets(prevBulletPositions => ([...prevBulletPositions, position]))
                 break;
@@ -218,7 +229,7 @@ export default function TheBirds() {
                 }))
                 break
         }
-    }, [gunPosition, changeButtonStatus, userData, pullTrigger])
+    }, [gunPosition, changeButtonStatus, settings, userData, pullTrigger])
 
     const handleKeyUp = useCallback((event) => {
         // TODO store codes in variables 
@@ -271,68 +282,136 @@ export default function TheBirds() {
 
     }, [])
 
-    const restartLevel = useCallback(async () => {
-        updateGameStatus(GAME_STATUS.NEW_GAME)
-        toggleTimer(false)
+    const initialiseLevel = useCallback((level = 0) => {
+        // clear path finders (bullets, shit, birds)
         setBirdPaths([])
         setNewWave([])
         progressBullets([])
+
+        // reset gun position
+        moveGun(GAME_DATA.INITIAL_GUN_POSITION)
+
+        // reset counters (level, health, kills)
         addKill(0)
         progressGameStep(0)
-        progressBirdShit([])
-        editHealth(userData.INITIAL_HEALTH)
-        moveGun(GAME_DATA.INITIAL_GUN_POSITION)
         setWaveIndex(0)
+        editHealth(userData.INITIAL_HEALTH)
+
+        // generate level (0 default)
         generateLevel()
+
+        // set game status ready
+        updateGameStatus(GAME_STATUS.MENU)
     }, [userData])
 
-    const startGame = useCallback(async () => {
-        await restartLevel()
+    const newSettingValue = (key, val) => {
+        const setting = GAME_DATA.DEFAULT_SETTINGS[key]
+        if (!setting) {
+            console.error(`Could not find setting object "${key}. Abort.`)
+            return
+        }
+        const { max, min } = setting;
+        return (val * ((max - min) / 10)) + min
+    }
+
+    const setupSettings = useCallback(() => {
+        const newSettings = {}
+
+        // transforms difficulty object into settings
+        for (const [option, value] of Object.entries(difficulty)) {
+            newSettings[option] = newSettingValue(option, value)
+        }
+
+        updateSettings(newSettings)
+
+    }, [difficulty])
+
+    const closeSettings = () => {
+        setupSettings()
+        setShowSettings(false)
+    }
+
+    const startLevel = useCallback(async () => {
         await toggleTimer(false)
         await updateGameStatus(GAME_STATUS.LIVE)
-    }, [restartLevel])
+    }, [])
+
+    const initialiseGame = useCallback(() => {
+        // setup userData
+        updateUserData(GAME_DATA.INITIAL_USER_DATA)
+        // setup settings
+        setupSettings()
+
+        // initilise level 0
+        initialiseLevel(0)
+    }, [initialiseLevel, setupSettings])
 
     useEffect(() => {
         if (gameStatus === GAME_STATUS.NEW_GAME) return;
 
-        const interval = setInterval(() => {
-            if (timerPaused) return () => clearInterval(interval);
-            updateGameStep()
-        }, GAME_DATA.GAME_PULSE);
+        // I think we will have a switch statement here with the GAME_STATUS.
+        // we need to initialise when first starting
+        // if we menu => new game, don't reinitialise (or we lose saved settings)
+        //  so we need like 'Uninitialised' 
 
-        if (playerHealth < 0) {
-            updateGameStatus(GAME_STATUS.LEVEL_COMPLETE)
-            clearInterval(interval)
-        }
+        let interval
 
-        // if wave is finished, need a new wave until no waves
-        if (wave.length === 0) {
-            const newWave = birdPaths[waveIndex]
+        switch (gameStatus) {
+            case GAME_STATUS.INITIALISING:
+                initialiseGame();
+                // setup game
+                break;
+            case GAME_STATUS.LIVE:
+                interval = setInterval(() => {
+                    if (timerPaused) return () => clearInterval(interval);
+                    updateGameStep()
+                }, settings.GAME_PULSE);
 
-            if (newWave) {
-                setNewWave(birdPaths[waveIndex])
+                if (playerHealth < 0) {
+                    // move this to update health function.
+                    updateGameStatus(GAME_STATUS.MENU)
+                    clearInterval(interval)
+                }
 
-                progressGameStep(0)
-                setWaveIndex(prevWaveIndex => prevWaveIndex + 1)
-            } else {
-                updateGameStatus(GAME_STATUS.LEVEL_COMPLETE)
-                clearInterval(interval)
-            }
+                // if wave is finished, need a new wave until no waves
+                if (wave.length === 0) {
+                    const newWave = birdPaths[waveIndex]
+
+                    if (newWave) {
+                        setNewWave(birdPaths[waveIndex])
+
+                        progressGameStep(0)
+                        setWaveIndex(prevWaveIndex => prevWaveIndex + 1)
+                    } else {
+                        updateGameStatus(GAME_STATUS.MENU)
+                        clearInterval(interval)
+                    }
+                }
+
+                break;
+            case GAME_STATUS.PAUSED:
+            case GAME_STATUS.MENU:
+                return clearInterval(interval)
+
         }
 
         // cleanup interval to stop a billion of them running concurrently
         return () => {
             clearInterval(interval)
         }
-    }, [updateGameStep, timerPaused, gameStep, wave, birdPaths, waveIndex, playerHealth, gameStatus]);
+    }, [updateGameStep, timerPaused, gameStep, wave, birdPaths, waveIndex, playerHealth, gameStatus, settings, initialiseGame]);
 
+
+    if ([GAME_STATUS.INITIALISING].includes(gameStatus)) return <div>
+        Loading...
+    </div>
 
     return (
         <GameContainer>
+            <Settings show={showSettings} difficulty={difficulty} onSave={closeSettings} updateDifficulty={updateDifficulty} />
             {
-                gameStatus === GAME_STATUS.NEW_GAME && <NewGame startGame={startGame} />
+                gameStatus === GAME_STATUS.MENU && <Menu newGame={initialiseGame} health={playerHealth} kills={kills} level={0} startGame={startLevel} openSettings={() => setShowSettings(prev => !prev)} />
             }
-
             {
                 [GAME_STATUS.LIVE, GAME_STATUS.PAUSED].includes(gameStatus) && <BirdCage>
                     {
@@ -342,20 +421,17 @@ export default function TheBirds() {
                     }
                     {
                         bulletPositions.map((bullet, index) => (
-                            <Bullet key={index} position={bullet} />
+                            <Bullet key={index} position={bullet} settings={settings} />
                         ))
                     }
                     {
                         shitPositions.map((shit, index) => (
-                            <Shit key={index} position={shit} />
+                            <Shit key={index} position={shit} settings={settings} />
                         ))
                     }
-                    <Gun position={gunPosition} />
-                    {gameStatus === GAME_STATUS.PAUSED && <Paused newGame={() => updateGameStatus(GAME_STATUS.NEW_GAME)} resume={togglePause} />}
+                    <Gun position={gunPosition} userData={userData} />
+                    {gameStatus === GAME_STATUS.PAUSED && <Paused newGame={initialiseGame} resume={togglePause} />}
                 </BirdCage>
-            }
-            {
-                [GAME_STATUS.LEVEL_COMPLETE].includes(gameStatus) && <GameEnd newGame={() => updateGameStatus(GAME_STATUS.NEW_GAME)} playerHealth={playerHealth} kills={kills} restartLevel={restartLevel} />
             }
             {
                 ![GAME_STATUS.NEW_GAME, GAME_STATUS.LEVEL_COMPLETE].includes(gameStatus) &&

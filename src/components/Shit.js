@@ -13,10 +13,10 @@ const ShitSprite = styled.div`
     z-index: 10;
 `
 
-export default function Shit({ position }) {
+export default function Shit({ position, settings }) {
     const { x, y } = position;
 
-    const { SHIT_SIZE } = GAME_DATA
+    const { SHIT_SIZE } = settings
 
     const width = toPixel(SHIT_SIZE)
     const height = toPixel(SHIT_SIZE)

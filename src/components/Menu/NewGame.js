@@ -1,7 +1,7 @@
-import { GameBox, InnerGameBox } from "./styles";
+import { GameBox, InnerGameBox } from "../styles";
 
 
-export default function NewGame({ startGame }) {
+export default function NewGame({ startGame, openSettings }) {
     return (
         <GameBox>
             <InnerGameBox>
@@ -18,9 +18,16 @@ export default function NewGame({ startGame }) {
                     <p>
                         shoot: space
                     </p>
-                    <button onClick={startGame}>
-                        Start Game
-                    </button>
+                    <p>
+                        <button onClick={startGame}>
+                            Start Game
+                        </button>
+                    </p>
+                    <p>
+                        <button onClick={openSettings}>
+                            Settings
+                        </button>
+                    </p>
                 </div>
             </InnerGameBox>
         </GameBox>
