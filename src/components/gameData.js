@@ -11,6 +11,35 @@ const GAME_DATA = {
 
     // Changable in Menu
     // Sets difficulty
+    DIFFICULTY_PRESETS: {
+        EASY: {
+            GAME_PULSE: 10,
+            BULLET_SIZE: 10,
+            SHIT_SPEED: 10,
+            SHIT_SIZE: 1,
+            SHIT_ODDS: 1,
+            BIRD_SPEED_MULTIPLIER: 1,
+            BIRD_SIZE_MULTIPLIER: 1,
+        },
+        HARD: {
+            GAME_PULSE: 5,
+            BULLET_SIZE: 5,
+            SHIT_SPEED: 5,
+            SHIT_SIZE: 5,
+            SHIT_ODDS: 5,
+            BIRD_SPEED_MULTIPLIER: 1,
+            BIRD_SIZE_MULTIPLIER: 1,
+        },
+        HMM: {
+            GAME_PULSE: 1,
+            BULLET_SIZE: 1,
+            SHIT_SPEED: 1,
+            SHIT_SIZE: 10,
+            SHIT_ODDS: 10,
+            BIRD_SPEED_MULTIPLIER: 1,
+            BIRD_SIZE_MULTIPLIER: 1,
+        },
+    },
 
     // which direction is easier / harder? 
     // can i normalise this and use 1-10 with a transform function?

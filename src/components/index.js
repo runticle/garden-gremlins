@@ -56,6 +56,7 @@ export default function TheBirds() {
     const [shitPositions, progressBirdShit] = useState([])
 
     // keep as exclusive
+    const [showSettings, setShowSettings] = useState(false)
     const [gameStatus, updateGameStatus] = useState(GAME_STATUS.INITIALISING)
     const [timerPaused, toggleTimer] = useState(true)
     const [gameStep, progressGameStep] = useState(0)
@@ -330,6 +331,11 @@ export default function TheBirds() {
 
     }, [difficulty])
 
+    const closeSettings = () => {
+        setupSettings()
+        setShowSettings(false)
+    }
+
     const startLevel = useCallback(async () => {
         await toggleTimer(false)
         await updateGameStatus(GAME_STATUS.LIVE)
@@ -407,9 +413,9 @@ export default function TheBirds() {
 
     return (
         <GameContainer>
+            <Settings show={showSettings} difficulty={difficulty} onSave={closeSettings} updateDifficulty={updateDifficulty} />
             {
-                // gameStatus === GAME_STATUS.MENU && <Menu newGame={initialiseGame} health={playerHealth} kills={kills} level={0} startGame={startLevel} />
-                gameStatus === GAME_STATUS.MENU && <Settings difficulty={difficulty} onSave={setupSettings} updateDifficulty={updateDifficulty} />
+                gameStatus === GAME_STATUS.MENU && <Menu newGame={initialiseGame} health={playerHealth} kills={kills} level={0} startGame={startLevel} openSettings={() => setShowSettings(prev => !prev)} />
             }
             {
                 [GAME_STATUS.LIVE, GAME_STATUS.PAUSED].includes(gameStatus) && <BirdCage>
