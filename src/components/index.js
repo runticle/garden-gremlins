@@ -31,13 +31,7 @@ export default function TheBirds() {
     const [userData, updateUserData] = useState({})
     // editable in settings
     // default difficulty
-    const [difficulty, updateDifficulty] = useLocalStorage('difficulty', {
-        GAME_PULSE: 5,
-        BULLET_SIZE: 5,
-        SHIT_SPEED: 5,
-        SHIT_SIZE: 5,
-        SHIT_ODDS: 5,
-    })
+    const [difficulty, updateDifficulty] = useLocalStorage('difficulty', GAME_DATA.DIFFICULTY_PRESETS.HARD)
     const [settings, updateSettings] = useState({})
     // editable by gameplay (stores health/kills etc) (waveIndex, paths etc eventually)
     const [gameData, updateGameData] = useState({})
@@ -315,6 +309,10 @@ export default function TheBirds() {
 
     const newSettingValue = (key, val) => {
         const setting = GAME_DATA.DEFAULT_SETTINGS[key]
+        if (!setting) {
+            console.error(`Could not find setting object "${key}. Abort.`)
+            return
+        }
         const { max, min } = setting;
         return (val * ((max - min) / 10)) + min
     }
