@@ -14,6 +14,7 @@ import HealthBar from "./HealthBar"
 import Paused from "./Paused"
 import Settings from "./Menu/Settings"
 import Menu from "./Menu"
+import useLocalStorage from "@/utils/useLocalStorage"
 
 const GAME_STATUS = {
     INITIALISING: 'INITIALISING', // only on startup.
@@ -29,6 +30,14 @@ export default function TheBirds() {
     // editable by upgrades
     const [userData, updateUserData] = useState({})
     // editable in settings
+    // default difficulty
+    const [difficulty, updateDifficulty] = useLocalStorage('difficulty', {
+        GAME_PULSE: 5,
+        BULLET_SIZE: 5,
+        SHIT_SPEED: 5,
+        SHIT_SIZE: 5,
+        SHIT_ODDS: 5,
+    })
     const [settings, updateSettings] = useState({})
     // editable by gameplay (stores health/kills etc) (waveIndex, paths etc eventually)
     const [gameData, updateGameData] = useState({})
@@ -301,33 +310,40 @@ export default function TheBirds() {
 
         // set game status ready
         updateGameStatus(GAME_STATUS.MENU)
-    })
+    }, [userData])
+
+    const newSettingValue = (key, val) => {
+        const setting = GAME_DATA.DEFAULT_SETTINGS[key]
+        const { max, min } = setting;
+        return (val * ((max - min) / 10)) + min
+    }
+
+    const setupSettings = useCallback(() => {
+        const newSettings = {}
+
+        // transforms difficulty object into settings
+        for (const [option, value] of Object.entries(difficulty)) {
+            newSettings[option] = newSettingValue(option, value)
+        }
+
+        updateSettings(newSettings)
+
+    }, [difficulty])
 
     const startLevel = useCallback(async () => {
         await toggleTimer(false)
         await updateGameStatus(GAME_STATUS.LIVE)
     }, [])
 
-    const formatInitialSettings = () => {
-        // maybe in future reads from client save
-        const settings = {}
-
-        Object.keys(GAME_DATA.DEFAULT_SETTINGS).forEach(key => settings[key] = GAME_DATA.DEFAULT_SETTINGS[key]['default'])
-
-        return settings;
-
-    }
-
     const initialiseGame = useCallback(() => {
         // setup userData
         updateUserData(GAME_DATA.INITIAL_USER_DATA)
         // setup settings
-        const defaultSettings = formatInitialSettings()
-        updateSettings(defaultSettings)
+        setupSettings()
 
         // initilise level 0
         initialiseLevel(0)
-    })
+    }, [initialiseLevel, setupSettings])
 
     useEffect(() => {
         if (gameStatus === GAME_STATUS.NEW_GAME) return;
@@ -389,12 +405,11 @@ export default function TheBirds() {
         Loading...
     </div>
 
-
     return (
         <GameContainer>
             {
-                gameStatus === GAME_STATUS.MENU && <Menu newGame={() => console.log('Not Ready')} health={playerHealth} kills={kills} level={0} startGame={startLevel} />
-                // gameStatus === GAME_STATUS.NEW_GAME && <Settings settings={userData} />
+                // gameStatus === GAME_STATUS.MENU && <Menu newGame={initialiseGame} health={playerHealth} kills={kills} level={0} startGame={startLevel} />
+                gameStatus === GAME_STATUS.MENU && <Settings difficulty={difficulty} onSave={setupSettings} updateDifficulty={updateDifficulty} />
             }
             {
                 [GAME_STATUS.LIVE, GAME_STATUS.PAUSED].includes(gameStatus) && <BirdCage>
