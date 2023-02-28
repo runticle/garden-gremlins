@@ -75,7 +75,7 @@ export default function TheBirds() {
         })
 
         progressBirdShit(newShitPositions)
-    }, [shitPositions, progressBirdShit, gunPosition])
+    }, [shitPositions, progressBirdShit, gunPosition, settings])
 
     const updateBulletPositions = useCallback(() => {
         const newBulletPositions = []
@@ -148,7 +148,7 @@ export default function TheBirds() {
         }
 
 
-    }, [bulletPositions, wave, killbird, gameStep, shitPositions, gunPosition, playerHit, userData])
+    }, [bulletPositions, wave, killbird, settings, gameStep, shitPositions, gunPosition, playerHit, userData])
 
     const updateGunPosition = useCallback(() => {
         moveGun(prevGunPosition => {
@@ -228,7 +228,7 @@ export default function TheBirds() {
                 }))
                 break
         }
-    }, [gunPosition, changeButtonStatus, userData, pullTrigger])
+    }, [gunPosition, changeButtonStatus, settings, userData, pullTrigger])
 
     const handleKeyUp = useCallback((event) => {
         // TODO store codes in variables 
@@ -382,7 +382,7 @@ export default function TheBirds() {
         return () => {
             clearInterval(interval)
         }
-    }, [updateGameStep, timerPaused, gameStep, wave, birdPaths, waveIndex, playerHealth, gameStatus]);
+    }, [updateGameStep, timerPaused, gameStep, wave, birdPaths, waveIndex, playerHealth, gameStatus, settings, initialiseGame]);
 
 
     if ([GAME_STATUS.INITIALISING].includes(gameStatus)) return <div>
@@ -414,7 +414,7 @@ export default function TheBirds() {
                         ))
                     }
                     <Gun position={gunPosition} userData={userData} />
-                    {gameStatus === GAME_STATUS.PAUSED && <Paused newGame={initialiseLevel} resume={togglePause} />}
+                    {gameStatus === GAME_STATUS.PAUSED && <Paused newGame={initialiseGame} resume={togglePause} />}
                 </BirdCage>
             }
             {
