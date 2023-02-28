@@ -21,9 +21,6 @@ const GAME_STATUS = {
     MENU: 'MENU', // new game menu / between levels / end game
     LIVE: 'LIVE',
     PAUSED: 'PAUSED',
-    // LEVEL_COMPLETE: 'LEVEL_COMPLETE',
-    // LOADING: 'LOADING',
-    // END ?
 }
 
 export default function TheBirds() {
