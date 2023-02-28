@@ -1,6 +1,5 @@
 import GameOver from "./GameOver";
 import LevelComplete from "./LevelComplete";
-import GameEnd from "./LevelComplete";
 import NewGame from "./NewGame";
 
 export default function Menu({ newGame, health, kills, level = 0, startGame, openSettings }) {
