@@ -15,32 +15,30 @@ const GAME_DATA = {
     // which direction is easier / harder? 
     // can i normalise this and use 1-10 with a transform function?
     DEFAULT_SETTINGS: {
-        GAME_PULSE: {
+        GAME_PULSE: { // smaller is harder
             default: 8,
-            max: 10,
-            min: 0,
-            step: 1,
-
+            max: 15,
+            min: 2,
         },
-        BULLET_SIZE: {
+        BULLET_SIZE: { // smaller is harder
             default: 4,
             max: 10,
-            min: 0,
+            min: 2,
         },
         SHIT_SPEED: {
-            default: 4,
+            default: 4, // smaller is harder
             max: 10,
-            min: 0,
+            min: 2,
         },
         SHIT_SIZE: {
-            default: 12,
-            max: 10,
-            min: 0,
+            default: 12, // smaller is easier
+            max: 20,
+            min: 5,
         },
-        SHIT_ODDS: {
+        SHIT_ODDS: { // smaller is easier 
             default: 0.005,
-            max: 10,
-            min: 0,
+            max: 0.008,
+            min: 0.001,
         },
         BIRD_SPEED_MULTIPLIER: {
             default: 1,
