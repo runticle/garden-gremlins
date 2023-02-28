@@ -22,10 +22,12 @@ const Editor = styled.div`
 
 
 
-export default function Settings({ difficulty = {}, updateDifficulty, onSave }) {
+export default function Settings({ difficulty = {}, updateDifficulty, onSave, show }) {
+
+    if (!show) return null
 
     return (
-        <GameBox>
+        <GameBox style={{ zIndex: 9999 }}>
             <InnerGameBox>
                 <h2>
                     Settings
@@ -51,17 +53,17 @@ export default function Settings({ difficulty = {}, updateDifficulty, onSave }) 
                         </Editor>
                     })}
                 </div>
-                {/* <div className="presets">
-                    <button>
+                <div className="presets">
+                    <button onClick={() => updateDifficulty(GAME_DATA.DIFFICULTY_PRESETS.EASY)}>
                         Easy
                     </button>
-                    <button>
+                    <button onClick={() => updateDifficulty(GAME_DATA.DIFFICULTY_PRESETS.HARD)}>
                         Hard
                     </button>
-                    <button>
+                    <button onClick={() => updateDifficulty(GAME_DATA.DIFFICULTY_PRESETS.HMM)}>
                         hmmm
                     </button>
-                </div> */}
+                </div>
                 <button onClick={onSave}>
                     Save & Close
                 </button>
