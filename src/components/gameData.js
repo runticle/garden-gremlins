@@ -15,7 +15,7 @@ const GAME_DATA = {
         EASY: {
             GAME_PULSE: 10,
             BULLET_SIZE: 10,
-            SHIT_SPEED: 10,
+            SHIT_SPEED: 1,
             SHIT_SIZE: 1,
             SHIT_ODDS: 1,
             BIRD_SPEED_MULTIPLIER: 1,
@@ -33,7 +33,7 @@ const GAME_DATA = {
         HMM: {
             GAME_PULSE: 1,
             BULLET_SIZE: 1,
-            SHIT_SPEED: 1,
+            SHIT_SPEED: 10,
             SHIT_SIZE: 10,
             SHIT_ODDS: 10,
             BIRD_SPEED_MULTIPLIER: 1,
