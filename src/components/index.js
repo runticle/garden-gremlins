@@ -35,7 +35,7 @@ export default function TheBirds() {
 
     // to be moved into gameData
     const [kills, addKill] = useState(0)
-    const [playerHealth, editHealth] = useState(userData.INITIAL_HEALTH)
+    const [playerHealth, editHealth] = useState(GAME_DATA.INITIAL_USER_DATA.INITIAL_HEALTH)
 
 
     // paths, maybe to be moved in
@@ -434,7 +434,7 @@ export default function TheBirds() {
                 </BirdCage>
             }
             {
-                ![GAME_STATUS.NEW_GAME, GAME_STATUS.LEVEL_COMPLETE].includes(gameStatus) &&
+                ![GAME_STATUS.MENU].includes(gameStatus) &&
                 <InfoBar>
                     <div>
                         <button onClick={togglePause}>
