@@ -69,16 +69,16 @@ const GAME_DATA = {
             max: 0.008,
             min: 0.001,
         },
-        BIRD_SPEED_MULTIPLIER: {
-            default: 1,
-            max: 10,
-            min: 0,
-        },
-        BIRD_SIZE_MULTIPLIER: {
-            default: 1,
-            max: 10,
-            min: 0,
-        },
+        // BIRD_SPEED_MULTIPLIER: {
+        //     default: 1,
+        //     max: 10,
+        //     min: 0,
+        // },
+        // BIRD_SIZE_MULTIPLIER: {
+        //     default: 1,
+        //     max: 10,
+        //     min: 0,
+        // },
     },
 
 
